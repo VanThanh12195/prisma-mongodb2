@@ -3,28 +3,61 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 async function main() {
-
-//   const newMessage = await prisma.message.create({
-//     data: {
-//       body: "This is a message seen by many users!", // Replace with the message content
-//       seenIds: ["651ceaaef5339e3f63ff961e","651cede59052283ed8830a62"],
-//       senderId:"651cede59052283ed8830a61"
-//     },
-//   });
-
-
-const userWithSeenMessages = await prisma.user.findUnique({
-    where: { id: "651cede59052283ed8830a62" },
+  const u = await prisma.user.create({
     include: {
-      seenMessages: true,
+      posts: {
+        include: {
+          categories: true,
+        },
+      },
+    },
+    data: {
+      email: "emma@prisma.io",
+      posts: {
+        create: [
+          {
+            title: "My first post",
+            categories: {
+              connectOrCreate: [
+                {
+                  create: { name: "Introductions" },
+                  where: {
+                    name: "Introductions",
+                  },
+                },
+                {
+                  create: { name: "Social" },
+                  where: {
+                    name: "Social",
+                  },
+                },
+              ],
+            },
+          },
+          {
+            title: "How to make cookies",
+            categories: {
+              connectOrCreate: [
+                {
+                  create: { name: "Social" },
+                  where: {
+                    name: "Social",
+                  },
+                },
+                {
+                  create: { name: "Cooking" },
+                  where: {
+                    name: "Cooking",
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
     },
   });
-
-
-
-
-  console.dir(userWithSeenMessages, { depth: null })
-
+  console.dir(u, { depth: null });
 }
 
 main()

@@ -7,19 +7,46 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model User {
-  id              String @id @default(auto()) @map("_id") @db.ObjectId
-  name            String?
-  seenMessageIds String[] @db.ObjectId
-  seenMessages Message[] @relation("Seen", fields: [seenMessageIds], references: [id])
-  messages Message[]
+model ExtendedProfile {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  biography String
+  user      User   @relation(fields: [userId], references: [id])
+  userId    String @unique @db.ObjectId
 }
 
-model Message {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  body String?
-  seenIds String[] @db.ObjectId
-  seen User[] @relation("Seen", fields: [seenIds], references: [id])
-  senderId String @db.ObjectId
-  sender User @relation(fields: [senderId], references: [id], onDelete: Cascade)
+model User {
+  id           String           @id @default(auto()) @map("_id") @db.ObjectId
+  name         String?
+  email        String           @unique
+  profileViews Int              @default(0)
+  role         Role             @default(USER)
+  coinflips    Boolean[]
+  posts        Post[]
+  profile      ExtendedProfile?
+}
+
+model Post {
+  id         String     @id @default(auto()) @map("_id") @db.ObjectId
+  title      String
+  published  Boolean    @default(true)
+  author     User       @relation(fields: [authorId], references: [id])
+  authorId   String     @db.ObjectId
+  comments   Json?
+  views      Int        @default(0)
+  likes      Int        @default(0)
+ categoryIDs String[]   @db.ObjectId
+  categories  Category[] @relation(fields: [categoryIDs], references: [id])
+  }
+
+
+model Category {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  name  String @unique
+  postIDs String[] @db.ObjectId
+  posts   Post[]   @relation(fields: [postIDs], references: [id])
+}
+
+enum Role {
+  USER
+  ADMIN
 }
